@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trail Log — Training Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fog:#EAF0EC;
+    --chalk:#FFFFFF;
+    --spruce:#1E3328;
+    --sage:#5B6B60;
+    --tide:#2C6E8C;
+    --trailhead:#B8763A;
+    --line:#D3DBD5;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--fog);
+    color:var(--spruce);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:40px;
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 0;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--sage);
+  }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    margin:2px 0 2px;
+  }
+  .header-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:14px;gap:10px;flex-wrap:wrap;}
+  .phase-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    background:var(--spruce);
+    color:var(--fog);
+    padding:5px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .card{
+    background:var(--chalk);
+    border-radius:var(--radius);
+    padding:18px;
+    margin-bottom:16px;
+    box-shadow:0 1px 2px rgba(30,51,40,0.08);
+  }
+  .today-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sage);text-transform:uppercase;letter-spacing:.08em;}
+  .session-title{
+    font-family:'Oswald',sans-serif;
+    font-size:26px;
+    font-weight:600;
+    text-transform:uppercase;
+    margin:4px 0 8px;
+    line-height:1.15;
+  }
+  .session-title.run{color:var(--tide);}
+  .session-title.lift{color:var(--trailhead);}
+  .session-detail{font-size:14px;color:var(--sage);margin-bottom:14px;line-height:1.5;}
+  .exercise-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;border-top:1px solid var(--line);
+    font-size:14px;gap:10px;
+  }
+  .exercise-row:first-of-type{border-top:none;}
+  .exercise-name{font-weight:500;}
+  .exercise-target{font-family:'IBM Plex Mono',monospace;color:var(--sage);font-size:12px;margin-top:2px;}
+  input[type=number], input[type=text]{
+    width:68px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;
+    background:var(--fog);color:var(--spruce);flex-shrink:0;
+  }
+  input:focus{outline:2px solid var(--tide);outline-offset:1px;}
+  .field-row{display:flex;gap:10px;margin-bottom:10px;align-items:center;justify-content:space-between;}
+  .field-row label{font-size:13px;color:var(--sage);}
+  .btn{
+    width:100%;padding:13px;border:none;border-radius:10px;
+    font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:.03em;
+    text-transform:uppercase;font-weight:600;cursor:pointer;
+    background:var(--spruce);color:var(--fog);margin-top:8px;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn.done{background:var(--sage);}
+  .week-strip{display:flex;gap:6px;margin-bottom:16px;}
+  .day-pill{
+    flex:1;text-align:center;padding:8px 2px;border-radius:10px;
+    background:var(--chalk);cursor:pointer;border:1px solid var(--line);
+  }
+  .day-pill.today{border-color:var(--spruce);border-width:2px;}
+  .day-pill.selected{background:var(--spruce);}
+  .day-pill.selected .dname, .day-pill.selected .dtype{color:var(--fog);}
+  .day-pill.complete{background:#E4EDE7;}
+  .dname{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sage);text-transform:uppercase;}
+  .dtype{font-size:11px;font-weight:600;margin-top:2px;color:var(--spruce);}
+  .check{font-size:12px;margin-top:2px;color:var(--tide);}
+  .section-title{
+    font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--sage);margin:0 0 10px;
+  }
+  .chart-wrap svg{width:100%;height:auto;display:block;}
+  .history-row{
+    display:flex;justify-content:space-between;padding:9px 0;
+    border-top:1px solid var(--line);font-size:13px;gap:10px;
+  }
+  .history-row:first-child{border-top:none;}
+  .history-date{font-family:'IBM Plex Mono',monospace;color:var(--sage);white-space:nowrap;}
+  .empty{color:var(--sage);font-size:13px;text-align:center;padding:16px 0;}
+  @media (prefers-reduced-motion: no-preference){
+    .card{transition:box-shadow .2s ease;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const PLAN_START = new Date(2026,7,24); // Mon Aug 24 2026
+const LONG_RUN_BY_WEEK = [6,6,7,8,7,9,10,11,9,12,13,14,15,11,15,16,16,12]; // weeks 1-18
+const PHASES = [
+  {name:'Base', from:1, to:4},
+  {name:'Build', from:5, to:10},
+  {name:'Peak', from:11, to:16},
+  {name:'Hold', from:17, to:18},
+];
+const LIFT_A = [
+  ['Goblet squat','3×10–12'],['Romanian deadlift','3×10–12'],['Walking lunges','3×10/leg'],
+  ['Bulgarian split squat','3×8–10/leg'],['Step-ups','3×10/leg'],['Standing calf raises','3×15–20'],
+  ['Plank','3×45–60s'],['Dead bug','3×10/side']
+];
+const LIFT_B = [
+  ['Dumbbell bench press','3×8–10'],['Bent-over row','3×10–12'],['Single-arm row','3×10/arm'],
+  ['Incline dumbbell press','3×8–10'],['Band pull-aparts / face pulls','3×15–20'],
+  ['Bicep curls','3×10–12'],['Overhead tricep extension','3×10–12'],['Russian twists','3×20']
+];
+const DAY_NAMES=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function dateKey(d){const x=startOfDay(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
+function getWeekNumber(d){const diff=Math.floor((startOfDay(d)-PLAN_START)/86400000);return Math.floor(diff/7)+1;}
+function getPhase(w){if(w<1)return{name:'Upcoming'};if(w>18)return{name:'Maintain'};for(const p of PHASES){if(w>=p.from&&w<=p.to)return p;}return{name:'—'};}
+function mondayOfWeek(d){const dow=d.getDay();const diff=(dow===0?-6:1-dow);return addDays(startOfDay(d),diff);}
+function formatDate(d){return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+
+function sessionFor(date){
+  const w=getWeekNumber(date);
+  const dow=date.getDay();
+  if(w<1)return{type:'upcoming',label:'Plan starts Aug 24',detail:'Nothing scheduled yet.'};
+  if(w>18)return{type:'maintain',label:'Maintenance',detail:'Hold around 180, keep a few easy miles and lifts going.'};
+  if(dow===1)return{type:'run',label:'Easy run',detail:'3–5 mi, conversational pace + core finisher.'};
+  if(dow===2)return{type:'lift',label:'Lift A — Lower body + core',exercises:LIFT_A};
+  if(dow===3)return{type:'rest',label:'Rest',detail:'Optional easy walk or bike. No log needed.'};
+  if(dow===4){const isTempo=w%2===1;return{type:'run',label:isTempo?'Tempo run':'Interval run',detail:isTempo?'20–30 min @ ~7:45–8:00/mi, warm-up + cool-down miles on each end.':'6–8 × 800m @ ~7:30–7:45/mi, 400m jog recovery between.'};}
+  if(dow===5)return{type:'lift',label:'Lift B — Upper body + core',exercises:LIFT_B};
+  if(dow===6){const dist=LONG_RUN_BY_WEEK[w-1]||12;return{type:'run',label:'Long run',detail:dist+' mi @ easy pace, ~9:15–9:45/mi.',distance:dist};}
+  return{type:'rest',label:'Rest',detail:''};
+}
+
+let logs={};
+let selectedDate=startOfDay(new Date());
+
+function loadLogs(){
+  try{const raw=localStorage.getItem('warren-trail-log');logs=raw?JSON.parse(raw):{};}
+  catch(e){logs={};}
+  render();
+}
+function saveLogs(){
+  try{localStorage.setItem('warren-trail-log',JSON.stringify(logs));}catch(e){console.error('save failed',e);}
+}
+
+function lastWeightFor(name){
+  const entries=Object.entries(logs).sort((a,b)=>a[0]<b[0]?1:-1);
+  for(const [,entry] of entries){
+    if(entry.exercises && entry.exercises[name]!=null && entry.exercises[name]!=='') return entry.exercises[name];
+  }
+  return '';
+}
+
+function selectDate(dk){
+  const [y,m,day]=dk.split('-').map(Number);
+  selectedDate=new Date(y,m-1,day);
+  render();
+}
+function saveRun(key){
+  const dist=parseFloat(document.getElementById('dist').value)||0;
+  const time=document.getElementById('time').value||'';
+  const sess=sessionFor(selectedDate);
+  logs[key]={type:'run',label:sess.label,completed:true,distance:dist,time:time};
+  saveLogs();
+  render();
+}
+function saveLift(key,names){
+  const exercises={};
+  names.forEach(name=>{
+    const el=document.getElementById('ex_'+name.replace(/[^a-zA-Z0-9]/g,''));
+    exercises[name]=parseFloat(el.value)||0;
+  });
+  const sess=sessionFor(selectedDate);
+  logs[key]={type:'lift',label:sess.label,completed:true,exercises};
+  saveLogs();
+  render();
+}
+window.selectDate=selectDate;
+window.saveRun=saveRun;
+window.saveLift=saveLift;
+
+function drawChart(currentWeek){
+  const W=340,H=150,padL=24,padR=10,padT=14,padB=18;
+  const chartW=W-padL-padR, chartH=H-padT-padB;
+  const maxMiles=18, n=18;
+  const x=i=>padL+(i/(n-1))*chartW;
+  const y=v=>padT+chartH-(v/maxMiles)*chartH;
+  const phaseColors={Base:'#DCE6E0',Build:'#D6E4EA',Peak:'#EFE0D2',Hold:'#E4E4DC'};
+  let bands='';
+  PHASES.forEach(p=>{
+    const x0=x(p.from-1), x1=x(p.to-1);
+    bands+='<rect x="'+x0+'" y="'+padT+'" width="'+(x1-x0)+'" height="'+chartH+'" fill="'+phaseColors[p.name]+'" opacity="0.6"/>';
+    bands+='<text x="'+((x0+x1)/2)+'" y="'+(padT-3)+'" font-size="7" font-family="IBM Plex Mono" fill="#5B6B60" text-anchor="middle" letter-spacing="0.5">'+p.name.toUpperCase()+'</text>';
+  });
+  let path='M '+LONG_RUN_BY_WEEK.map((v,i)=>x(i)+','+y(v)).join(' L ');
+  let dots=LONG_RUN_BY_WEEK.map((v,i)=>{
+    const isPeak=v===16;
+    return '<circle cx="'+x(i)+'" cy="'+y(v)+'" r="'+(isPeak?3.2:2)+'" fill="'+(isPeak?'#B8763A':'#2C6E8C')+'"/>';
+  }).join('');
+  let hereMark='';
+  if(currentWeek>=1&&currentWeek<=18){
+    const cx=x(currentWeek-1);
+    hereMark='<line x1="'+cx+'" y1="'+padT+'" x2="'+cx+'" y2="'+(padT+chartH)+'" stroke="#1E3328" stroke-width="1" stroke-dasharray="2,2"/>'+
+      '<text x="'+cx+'" y="'+(H-4)+'" font-size="7" font-family="IBM Plex Mono" fill="#1E3328" text-anchor="middle">YOU ARE HERE</text>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'">'+bands+
+    '<path d="'+path+'" fill="none" stroke="#2C6E8C" stroke-width="1.5"/>'+dots+hereMark+
+    '<text x="'+padL+'" y="'+(padT+2)+'" font-size="7" font-family="IBM Plex Mono" fill="#5B6B60">16mi</text></svg>';
+}
+
+function render(){
+  const app=document.getElementById('app');
+  const today=startOfDay(new Date());
+  const w=getWeekNumber(selectedDate);
+  const phase=getPhase(w);
+  const sess=sessionFor(selectedDate);
+  const key=dateKey(selectedDate);
+  const entry=logs[key];
+  const isToday=dateKey(selectedDate)===dateKey(today);
+
+  const monday=mondayOfWeek(selectedDate);
+  let stripHtml='';
+  for(let i=0;i<7;i++){
+    const d=addDays(monday,i);
+    const dk=dateKey(d);
+    const s=sessionFor(d);
+    const done=logs[dk]&&logs[dk].completed;
+    const isSel=dk===key;
+    const isTod=dk===dateKey(today);
+    const typeLabel = s.type==='rest' ? '—' : s.type==='lift' ? 'Lift' : (s.distance ? s.distance+'mi' : 'Run');
+    stripHtml+='<div class="day-pill '+(isTod?'today':'')+' '+(isSel?'selected':'')+' '+(done?'complete':'')+'" onclick="selectDate(\''+dk+'\')">'+
+      '<div class="dname">'+DAY_NAMES[d.getDay()]+'</div>'+
+      '<div class="dtype">'+typeLabel+'</div>'+
+      '<div class="check">'+(done?'✓':'')+'</div></div>';
+  }
+
+  let bodyHtml='';
+  if(sess.type==='upcoming'||sess.type==='maintain'||sess.type==='rest'){
+    bodyHtml='<div class="session-detail">'+sess.detail+'</div>';
+  } else if(sess.type==='run'){
+    const dist=(entry&&entry.distance!=null)?entry.distance:(sess.distance!=null?sess.distance:'');
+    const time=(entry&&entry.time)?entry.time:'';
+    bodyHtml='<div class="session-detail">'+sess.detail+'</div>'+
+      '<div class="field-row"><label for="dist">Actual distance (mi)</label><input type="number" step="0.1" id="dist" value="'+dist+'"></div>'+
+      '<div class="field-row"><label for="time">Time (optional)</label><input type="text" id="time" placeholder="mm:ss" value="'+time+'"></div>'+
+      '<button class="btn '+(entry&&entry.completed?'done':'')+'" onclick="saveRun(\''+key+'\')">'+(entry&&entry.completed?'✓ Logged — tap to update':'Mark complete')+'</button>';
+  } else if(sess.type==='lift'){
+    let rows='';
+    sess.exercises.forEach(function(pair){
+      const name=pair[0], target=pair[1];
+      const val=(entry&&entry.exercises&&entry.exercises[name]!=null)?entry.exercises[name]:lastWeightFor(name);
+      rows+='<div class="exercise-row"><div><div class="exercise-name">'+name+'</div><div class="exercise-target">'+target+'</div></div>'+
+        '<input type="number" step="2.5" placeholder="lb" id="ex_'+name.replace(/[^a-zA-Z0-9]/g,'')+'" value="'+val+'"></div>';
+    });
+    const names=JSON.stringify(sess.exercises.map(function(p){return p[0];})).replace(/"/g,'&quot;');
+    bodyHtml=rows+'<button class="btn '+(entry&&entry.completed?'done':'')+'" onclick=\'saveLift("'+key+'", '+JSON.stringify(sess.exercises.map(function(p){return p[0];}))+')\'>'+(entry&&entry.completed?'✓ Logged — tap to update':'Mark complete')+'</button>';
+  }
+
+  const chart=drawChart(w);
+  const historyEntries=Object.entries(logs).filter(function(e){return e[1].completed;}).sort(function(a,b){return a[0]<b[0]?1:-1;}).slice(0,8);
+  let historyHtml=historyEntries.length? historyEntries.map(function(e){
+    const dk=e[0], v=e[1];
+    let stat='Done';
+    if(v.exercises){
+      const vals=Object.values(v.exercises).filter(function(x){return x>0;});
+      stat = vals.length ? 'Top set '+Math.max.apply(null,vals)+' lb' : 'Logged';
+    } else if(v.distance){
+      stat = v.distance+' mi'+(v.time?' · '+v.time:'');
+    }
+    return '<div class="history-row"><span>'+(v.label||'')+'</span><span class="history-date">'+dk+' · '+stat+'</span></div>';
+  }).join('') : '<div class="empty">Nothing logged yet — today\'s a good day to start.</div>';
+
+  app.innerHTML=
+    '<div class="header-row"><div><div class="eyebrow">Trail Log</div><h1>'+(isToday?'Today':formatDate(selectedDate))+'</h1></div>'+
+    '<div class="phase-badge">Week '+Math.max(1,Math.min(w,18))+' of 18 · '+phase.name+'</div></div>'+
+    '<div class="week-strip">'+stripHtml+'</div>'+
+    '<div class="card"><div class="today-label">'+formatDate(selectedDate)+'</div>'+
+    '<div class="session-title '+(sess.type==='lift'?'lift':'run')+'">'+sess.label+'</div>'+bodyHtml+'</div>'+
+    '<div class="card"><div class="section-title">18-week long run build</div><div class="chart-wrap">'+chart+'</div></div>'+
+    '<div class="card"><div class="section-title">Recent log</div>'+historyHtml+'</div>';
+}
+
+loadLogs();
+</script>
+</body>
+</html>
